@@ -115,22 +115,16 @@
      <string>Seleccione Puerto</string>
     </property>
    </widget>
-  </widget>
-  <widget class="PlotWidget" name="VentanaPlot">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>240</y>
-     <width>761</width>
-     <height>311</height>
-    </rect>
-   </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
+   <zorder>btn_cerrar_conexion</zorder>
+   <zorder>btn_Abrir_conexion</zorder>
+   <zorder>label</zorder>
+   <zorder>lbl_estado</zorder>
+   <zorder>combo_puertos</zorder>
+   <zorder>Lbl_puerto</zorder>
+   <zorder>VentanaPlot</zorder>
+   <zorder>groupBox_2</zorder>
+   <zorder>groupBox</zorder>
+   <zorder>frame_2</zorder>
   </widget>
   <widget class="QPushButton" name="btn_Salir">
    <property name="geometry">
@@ -457,9 +451,33 @@
     </property>
    </widget>
   </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>230</y>
+     <width>761</width>
+     <height>321</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="sizeConstraint">
+     <enum>QLayout::SetNoConstraint</enum>
+    </property>
+    <item>
+     <widget class="PlotWidget" name="VentanaPlot">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
   <zorder>frame_2</zorder>
   <zorder>frame</zorder>
-  <zorder>VentanaPlot</zorder>
   <zorder>btn_Salir</zorder>
   <zorder>btn_LimpiarPlot</zorder>
   <zorder>btn_CargarMedicion</zorder>
@@ -468,6 +486,7 @@
   <zorder>label_4</zorder>
   <zorder>groupBox</zorder>
   <zorder>groupBox_2</zorder>
+  <zorder>verticalLayoutWidget</zorder>
  </widget>
  <customwidgets>
   <customwidget>

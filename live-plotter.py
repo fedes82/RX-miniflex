@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 from PyQt4 import QtCore, QtGui, uic
 import serial
@@ -19,7 +21,7 @@ from math import sin,radians
 form_class = uic.loadUiType("ui.ui")[0]
 
 #eto es para usar 2 decimales
-getcontext.prec=2
+#getcontext.prec=2
 
 def Monitor_Serie(puerto, q_datos,q_cerrar):
     """Este thread se ocupa de leer el puerto paralelo
