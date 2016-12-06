@@ -50,6 +50,7 @@ void loop() {
         sensorValue = analogRead(analogInPin);
         //Serial.print(sensorValue);
         printDouble(sensorValue,2);
+        Serial.print("\n");
         while(estoymidiendo)
         {
             if (Serial.available() >0)
@@ -64,6 +65,7 @@ void loop() {
                   sensorValue = analogRead(analogInPin);
                   //Serial.print(sensorValue);
                   printDouble(sensorValue,2);
+                  Serial.print("\n");
                }
                if (lectura == 'T')
                 {
@@ -71,7 +73,7 @@ void loop() {
                   estoymidiendo = 0;
                 }
                 if (lectura == 'P')
-                {Serial.println("comunicacion ON ");}
+                {Serial.println("comunicacion ON \n");}
         }
             /*
             // map it to the range of the analog out:

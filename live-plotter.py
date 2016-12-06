@@ -16,6 +16,8 @@ from decimal import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from math import sin,radians
+from pyqtgraph.Point import Point
+
 
 # Cargar nuestro archivo .ui
 form_class = uic.loadUiType("ui.ui")[0]
@@ -171,9 +173,22 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_plot)
         
+        #pra el cursor
+        #cross hair
+        self.vLine = pg.InfiniteLine(angle=90, movable=False)
+        self.hLine = pg.InfiniteLine(angle=0, movable=False)
+        self.VentanaPlot.addItem(self.vLine, ignoreBounds=True)
+        self.VentanaPlot.addItem(self.hLine, ignoreBounds=True)
+        self.vb = self.VentanaPlot.plotItem.vb
+        # en el proxy este, que hay que ver bien que hace, el ratelimit me sirve para
+        # limitar las actualizaciones por segundo, para que no se tare el programa
+        self.proxy = pg.SignalProxy(self.VentanaPlot.scene().sigMouseMoved, rateLimit=30, slot=self.mouseMoved)
+        
+        
         # Inicializo los widgets
-        self.rbtn_Relativo.setChecked(True)
+        self.rbtn_Absoluto.setChecked(True)
         self.rbtn_Grados.setChecked(True)
+        self.btn_cerrar_conexion.setEnabled(False)
         self.cmb_AnguloInicial.setCurrentIndex(5)
         self.lnedit_lambda.setText('1.5405')
         self.lnedit_lambda.setValidator(QDoubleValidator(0.0000,99.9999,4))
@@ -236,6 +251,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.cmb_AnguloFinal.setEnabled(False)
         self.btn_Abrir_conexion.setEnabled(False)
         self.btn_LimpiarPlot.setEnabled(False)
+        self.btn_cerrar_conexion.setEnabled(True)
     
     def btn_cerrar_conexion_clicked(self):
         """ Indica al monitor serie que cierre la conexion y 
@@ -332,7 +348,33 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
                 self.VentanaPlot.setLabel('bottom','Angulo', units='grados')
             self.curve.setData(self.xdatos, self.ydatos)
                 
-            
+                
+    def mouseMoved(self,evt):
+        """funcion que muestra un cursor en el grafico"""
+        #print evt[0]
+        pos = evt[0]  ## using signal proxy turns original arguments into a tuple
+        print pos
+        print self.VentanaPlot.sceneBoundingRect()
+        print self.VentanaPlot.sceneBoundingRect().contains(pos)
+        if self.VentanaPlot.sceneBoundingRect().contains(pos):
+            #print 'ventanaplot contiene a pos'
+            mousePoint = self.vb.mapSceneToView(pos)
+            #index = int(mousePoint.x())
+            #print 'indice', index
+            #print mousePoint.y() ,mousePoint.x()
+            #if index > 0 and index < len(self.ydatos):
+            #    print 'indice bien'
+                #self.lbl_valX.setText('%0.3f' % mousePoint.x())
+                #self.lbl_valY.setText('%0.3f' % self.ydatos[index])
+                #self.lbl_valX.setText('%0.3f' % mousePoint.x())
+                #label.setText("<span style='font-size: 12pt'>x=%0.1f,   <span style='color: red'>y1=%0.1f</span>,   <span style='color: green'>y2=%0.1f</span>" % (mousePoint.x(), data1[index], data2[index]))
+            self.lbl_valX.setText('%0.3f' % mousePoint.x())
+            self.lbl_valY.setText('%0.3f' % mousePoint.y())
+            self.vLine.setPos(mousePoint.x())
+            self.hLine.setPos(mousePoint.y())
+            print self.ydatos
+
+
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
