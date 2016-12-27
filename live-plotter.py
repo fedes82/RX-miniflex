@@ -30,13 +30,12 @@ def Monitor_Serie(puerto, q_datos,q_cerrar):
         - cuando se pone algo en la cola q_cerrar, cierra todo y sale
         
     """
-    ser = serial.Serial(port=puerto, baudrate=4800,timeout=30)
     sleep(0.1)
     print 'el puerto se abrio?', ser
     d = 0
     ser.flushInput()
     ser.flushOutput()
-    sleep(1)
+    sleep(0.5)
     print 'envio ', ser.write('I'), ' bytes'
     while(q_cerrar.empty()):
         t = ser.read()
@@ -58,7 +57,7 @@ def Monitor_Serie(puerto, q_datos,q_cerrar):
            # print d
             q_datos.put(float(t))
             # avanza a 0.5 grados por minuto, tonces muestreo cada 
-            sleep(0.20)
+            sleep(0.232)
             ser.write('1')
             ser.timeout = 1
         else:
@@ -83,7 +82,6 @@ def Monitor_Serie_con_nl(puerto, q_datos,q_cerrar):
         - cuando se pone algo en la cola q_cerrar, cierra todo y sale
         
     """
-    ser = serial.Serial(port=puerto, baudrate=4800,timeout=30)
     sleep(0.1)
     print 'el puerto se abrio?', ser
     ser.flushInput()
@@ -111,6 +109,42 @@ def Monitor_Serie_con_nl(puerto, q_datos,q_cerrar):
     ser.close()
     ser.close()
 
+def Monitor_Serie_con_nl_y_mark(puerto, q_datos,q_cerrar):
+    """Este thread se ocupa de leer el puerto paralelo
+        - loop infinito que blockea hasta que lee una linea del pto serie
+        - cuando llega una nueva linea la pone en la cola q_datos
+        - cuando se pone algo en la cola q_cerrar, cierra todo y sale
+        
+    """
+    ser = serial.Serial(port=puerto, baudrate=9600,timeout=60)
+    sleep(0.1)
+    print 'el puerto se abrio?', ser
+    ser.flushInput()
+    ser.flushOutput()
+    sleep(1)
+    print 'envio ', ser.write('I'), ' bytes'
+    while(q_cerrar.empty()):
+        t = ser.readline()
+        if len(t) > 0 :
+            if not t.startswith('mark'):
+                print 'recibi: ',t
+                q_datos.put(float(t))
+                    # avanza a 2 grados por minuto, tonces muestreo cada 
+                #sleep(0.29)
+                #ser.write('1')
+                ser.timeout = 1
+        else:
+            ser.timeout = 1
+            print 'timeout'
+    print 'cierro puerto y proceso comunicacion'
+    q_cerrar.get()
+    q_cerrar.close()
+    q_datos.close()
+    ser.write('T')
+    t =0
+    ser.close()
+    ser.close()
+    
 def serial_ports():
     """Lista los puertos serie
         :raises EnvironmentError:
@@ -225,7 +259,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         pueden usar mientras plotea"""
         self.lbl_estado.setText ('CONECTADO')
         print self.combo_puertos.currentText()
-        self.monitor_serie = mp.Process(target=Monitor_Serie, args=(str(self.combo_puertos.currentText()), self.q_datos, self.q_cerrar))
+        self.monitor_serie = mp.Process(target=Monitor_Serie_con_nl_y_mark, args=(str(self.combo_puertos.currentText()), self.q_datos, self.q_cerrar))
         self.monitor_serie.start()
         #esto dispara el timer que actualiza el plot
         self.timer.start(150)
@@ -316,7 +350,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
                 self.datos_porcentual = [valor*100/max(self.datos)  for valor in self.datos]
             else:
                 self.datos_porcentual = [0 for valor in self.datos]
-            self.datos_x_angulo = [int(self.cmb_AnguloInicial.currentText())-i*0.01 for i in range(len(self.datos_porcentual))]
+            self.datos_x_angulo = [int(self.cmb_AnguloInicial.currentText())-i*0.02 for i in range(len(self.datos_porcentual))]
             self.datos_x_espacio = [ float(self.lnedit_lambda.text())/(2*sin(radians(angulo/2))) for angulo in self.datos_x_angulo]
             if self.rbtn_Absoluto.isChecked():
                 self.ydatos = np.array(self.datos)
