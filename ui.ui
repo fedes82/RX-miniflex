@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1068</width>
-    <height>721</height>
+    <width>1168</width>
+    <height>695</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -119,8 +119,8 @@
   <widget class="QPushButton" name="btn_Salir">
    <property name="geometry">
     <rect>
-     <x>660</x>
-     <y>130</y>
+     <x>1030</x>
+     <y>140</y>
      <width>85</width>
      <height>27</height>
     </rect>
@@ -132,8 +132,8 @@
   <widget class="QPushButton" name="btn_LimpiarPlot">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>180</y>
+     <x>600</x>
+     <y>40</y>
      <width>85</width>
      <height>27</height>
     </rect>
@@ -317,8 +317,8 @@
   <widget class="QPushButton" name="btn_CargarMedicion">
    <property name="geometry">
     <rect>
-     <x>640</x>
-     <y>50</y>
+     <x>1010</x>
+     <y>60</y>
      <width>131</width>
      <height>27</height>
     </rect>
@@ -330,8 +330,8 @@
   <widget class="QPushButton" name="btn_GuardarMedicion">
    <property name="geometry">
     <rect>
-     <x>640</x>
-     <y>10</y>
+     <x>1010</x>
+     <y>20</y>
      <width>131</width>
      <height>27</height>
     </rect>
@@ -343,8 +343,8 @@
   <widget class="QLineEdit" name="lnedit_lambda">
    <property name="geometry">
     <rect>
-     <x>210</x>
-     <y>180</y>
+     <x>460</x>
+     <y>120</y>
      <width>71</width>
      <height>27</height>
     </rect>
@@ -353,8 +353,8 @@
   <widget class="QLabel" name="label_4">
    <property name="geometry">
     <rect>
-     <x>190</x>
-     <y>150</y>
+     <x>350</x>
+     <y>120</y>
      <width>131</width>
      <height>20</height>
     </rect>
@@ -366,10 +366,10 @@
   <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
-     <x>350</x>
-     <y>120</y>
+     <x>700</x>
+     <y>10</y>
      <width>161</width>
-     <height>101</height>
+     <height>91</height>
     </rect>
    </property>
    <property name="title">
@@ -405,9 +405,9 @@
   <widget class="QGroupBox" name="groupBox_2">
    <property name="geometry">
     <rect>
-     <x>520</x>
-     <y>120</y>
-     <width>121</width>
+     <x>870</x>
+     <y>10</y>
+     <width>131</width>
      <height>91</height>
     </rect>
    </property>
@@ -417,7 +417,7 @@
    <widget class="QRadioButton" name="rbtn_Relativo">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>10</x>
       <y>30</y>
       <width>111</width>
       <height>22</height>
@@ -430,7 +430,7 @@
    <widget class="QRadioButton" name="rbtn_Absoluto">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>10</x>
       <y>60</y>
       <width>121</width>
       <height>22</height>
@@ -447,7 +447,7 @@
      <x>10</x>
      <y>230</y>
      <width>1151</width>
-     <height>481</height>
+     <height>451</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -466,6 +466,91 @@
     </item>
    </layout>
   </widget>
+  <widget class="QGroupBox" name="groupBox_3">
+   <property name="geometry">
+    <rect>
+     <x>700</x>
+     <y>110</y>
+     <width>301</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Cursor</string>
+   </property>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>16</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>X</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_valX">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>30</y>
+      <width>111</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>10</y>
+      <width>16</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Y</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_valY">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>30</y>
+      <width>111</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+  </widget>
   <zorder>frame_2</zorder>
   <zorder>frame</zorder>
   <zorder>btn_Salir</zorder>
@@ -477,6 +562,7 @@
   <zorder>groupBox</zorder>
   <zorder>groupBox_2</zorder>
   <zorder>verticalLayoutWidget</zorder>
+  <zorder>groupBox_3</zorder>
  </widget>
  <customwidgets>
   <customwidget>
