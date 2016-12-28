@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>784</width>
-    <height>562</height>
+    <width>1068</width>
+    <height>721</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -115,21 +115,11 @@
      <string>Seleccione Puerto</string>
     </property>
    </widget>
-   <zorder>btn_cerrar_conexion</zorder>
-   <zorder>btn_Abrir_conexion</zorder>
-   <zorder>label</zorder>
-   <zorder>lbl_estado</zorder>
-   <zorder>combo_puertos</zorder>
-   <zorder>Lbl_puerto</zorder>
-   <zorder>VentanaPlot</zorder>
-   <zorder>groupBox_2</zorder>
-   <zorder>groupBox</zorder>
-   <zorder>frame_2</zorder>
   </widget>
   <widget class="QPushButton" name="btn_Salir">
    <property name="geometry">
     <rect>
-     <x>670</x>
+     <x>660</x>
      <y>130</y>
      <width>85</width>
      <height>27</height>
@@ -456,8 +446,8 @@
     <rect>
      <x>10</x>
      <y>230</y>
-     <width>761</width>
-     <height>321</height>
+     <width>1151</width>
+     <height>481</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">

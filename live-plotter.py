@@ -30,6 +30,7 @@ def Monitor_Serie(puerto, q_datos,q_cerrar):
         - cuando se pone algo en la cola q_cerrar, cierra todo y sale
         
     """
+    ser = serial.Serial(port=puerto, baudrate=9600,timeout=60)
     sleep(0.1)
     print 'el puerto se abrio?', ser
     d = 0
@@ -82,6 +83,7 @@ def Monitor_Serie_con_nl(puerto, q_datos,q_cerrar):
         - cuando se pone algo en la cola q_cerrar, cierra todo y sale
         
     """
+    ser = serial.Serial(port=puerto, baudrate=9600,timeout=60)
     sleep(0.1)
     print 'el puerto se abrio?', ser
     ser.flushInput()
