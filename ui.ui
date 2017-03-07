@@ -221,6 +221,31 @@
       <string>100</string>
      </property>
     </item>
+    <item>
+     <property name="text">
+      <string>110</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>120</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>130</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>140</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>150</string>
+     </property>
+    </item>
    </widget>
    <widget class="QComboBox" name="cmb_AnguloFinal">
     <property name="geometry">
@@ -284,6 +309,31 @@
     <item>
      <property name="text">
       <string>100</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>110</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>120</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>130</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>140</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>150</string>
      </property>
     </item>
    </widget>

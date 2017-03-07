@@ -23,6 +23,18 @@ form_class = uic.loadUiType("ui.ui")[0]
 #eto es para usar 2 decimales
 #getcontext.prec=2
 
+def Comprobar_Conexion(puerto, q_datos,q_cerrar):
+    """ Esta funcion abre el puerto serie, envia una P (comando
+    para que responda el micro si hay conexion) y devuelve true si hay 
+    conexion o false si el micro no responde """
+    ser = serial.Serial(port=puerto, baudrate=9600,timeout=3)
+    sleep(0.1)
+    print 'el puerto se abrio?', ser
+    p = ''
+    ser.flushInput()
+    ser.flushOutput()
+    
+
 def Monitor_Serie(puerto, q_datos,q_cerrar):
     """Este thread se ocupa de leer el puerto paralelo
         - loop infinito que blockea hasta que lee una linea del pto serie
@@ -30,14 +42,38 @@ def Monitor_Serie(puerto, q_datos,q_cerrar):
         - cuando se pone algo en la cola q_cerrar, cierra todo y sale
         
     """
-    ser = serial.Serial(port=puerto, baudrate=9600,timeout=60)
+    ser = serial.Serial(port=puerto, baudrate=9600,timeout=1)
     sleep(0.1)
     print 'el puerto se abrio?', ser
     d = 0
     ser.flushInput()
     ser.flushOutput()
     sleep(0.5)
-    print 'envio ', ser.write('I'), ' bytes'
+    #Comprobacion de conexion, envio p, si hay timeout repito 10 veces
+    # si responde algo distinto de 'COM OK' o si no responde, hay error en
+    # comunicacion; aviso al prog principal y cierro puerto serie
+    t = ''
+    for i in range(10):
+        ser.write('P')
+        t = ser.read()
+        if len(t) > 0 :
+            sleep(0.05)
+            t = t + ser.read(ser.inWaiting())
+            break
+    if (len(t)== 0)  or (not t.startswith('COM OK')):
+        print 'error en la comunicacion'
+        q_datos.put('sin conexion')
+        q_cerrar.get()
+        q_cerrar.close()
+        q_datos.close()
+        d =0
+        t =0
+        ser.close()
+        ser.close()
+        print 'COMPROBAR CONEXION'
+        return
+    ser = serial.Serial(port=puerto, baudrate=9600,timeout=10)   
+    print 'envio ', ser.write('I'), ' bytes, comienzo medicion'
     while(q_cerrar.empty()):
         t = ser.read()
         ti = time()
@@ -112,18 +148,43 @@ def Monitor_Serie_con_nl(puerto, q_datos,q_cerrar):
     ser.close()
 
 def Monitor_Serie_con_nl_y_mark(puerto, q_datos,q_cerrar):
-    """Este thread se ocupa de leer el puerto paralelo
+    """Este thread se ocupa de leer el puerto serie
+        - Comprobacion de conexion, envia P 10 veces, si no recibe respuesta
+            o la respuesta es distinta de OK COM, avisa al prog principal
+            y cierra el puerto y el thread
         - loop infinito que blockea hasta que lee una linea del pto serie
         - cuando llega una nueva linea la pone en la cola q_datos
         - cuando se pone algo en la cola q_cerrar, cierra todo y sale
         
     """
-    ser = serial.Serial(port=puerto, baudrate=9600,timeout=60)
+    ser = serial.Serial(port=puerto, baudrate=9600,timeout=1.5)
     sleep(0.1)
     print 'el puerto se abrio?', ser
     ser.flushInput()
     ser.flushOutput()
-    sleep(1)
+    t = ''
+    for i in range(10):
+        ser.write('P')
+        t = ser.read()
+        if len(t) > 0 :
+            sleep(0.05)
+            t = t + ser.read(ser.inWaiting())
+            break
+        print 'timeout comprobar conexion'
+    if (len(t)== 0)  or (not t.startswith('COM OK')):
+        print 'error en la comunicacion'
+        q_datos.put('sin conexion')
+        q_cerrar.get()
+        q_cerrar.close()
+        q_datos.close()
+        d =0
+        t =0
+        ser.close()
+        ser.close()
+        print 'COMPROBAR CONEXION'
+        return
+    print 'Conexion OK'
+    ser.timeout = 30
     print 'envio ', ser.write('I'), ' bytes'
     while(q_cerrar.empty()):
         t = ser.readline()
@@ -356,10 +417,17 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         """ Este es el algoritmo que toma los datos y los formatea
         para mostrarlo en el grafico, 
         se ejecuta en cada timeout del timer y toma los datos de una 
-        queue que comparte con el thread del monitor del pto serie"""
+        queue que comparte con el thread del monitor del pto serie.
+        Si lee de la queue la cadena 'sin conexion' supone que el adquisidor
+        no esta conectado, muestra el mensaje de error y cierra el thread del monitor"""
         if not self.q_datos.empty():
             while not self.q_datos.empty():
-                self.datos.append(self.q_datos.get())
+                temp = self.q_datos.get()
+                if temp == 'sin conexion':
+                    self.msj_error_conexion()
+                    return
+                else:
+                    self.datos.append(temp)
             if max(self.datos):
                 self.datos_porcentual = [valor*100/max(self.datos)  for valor in self.datos]
             else:
@@ -385,9 +453,9 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         """funcion que muestra un cursor en el grafico"""
         #print evt[0]
         pos = evt[0]  ## using signal proxy turns original arguments into a tuple
-        print pos
-        print self.VentanaPlot.sceneBoundingRect()
-        print self.VentanaPlot.sceneBoundingRect().contains(pos)
+       # print pos
+       # print self.VentanaPlot.sceneBoundingRect()
+       # print self.VentanaPlot.sceneBoundingRect().contains(pos)
         if self.VentanaPlot.sceneBoundingRect().contains(pos):
             #print 'ventanaplot contiene a pos'
             mousePoint = self.vb.mapSceneToView(pos)
@@ -404,8 +472,21 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
             self.lbl_valY.setText('%0.3f' % mousePoint.y())
             self.vLine.setPos(mousePoint.x())
             self.hLine.setPos(mousePoint.y())
-            print self.ydatos        
+        #    print self.ydatos        
 
+    def msj_error_conexion(self):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("Error de conexion")
+        msg.setInformativeText("El adquisidor no responde.\n Compruebe que el adquisidor este\n encendido y conectado\n y que el puerto seleccionado sea el correcto.")
+        msg.setWindowTitle("Error de conexion")
+        #msg.setDetailedText("The details are as follows:")
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.buttonClicked.connect(self.btn_cerrar_conexion_clicked)
+        retval = msg.exec_()
+     #  print "value of pressed message box button:", retval
+        
+        
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
 
