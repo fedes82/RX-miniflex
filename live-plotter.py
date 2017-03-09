@@ -261,6 +261,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.rbtn_Relativo.clicked.connect(self.rbtn_Relativo_clicked)
         self.rbtn_Espacio.clicked.connect(self.rbtn_Espacio_clicked)
         self.rbtn_Grados.clicked.connect(self.rbtn_Grados_clicked)
+        #self.chk_Autoscale.clicked.connect()
         
         #esto es para el grafico, curve es el graf propiamente dicho y timer 
         # es lo que uso para actualizarlo
@@ -385,10 +386,10 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
             self.rbtn_Relativo.setChecked(False)
             self.rbtn_Espacio.setChecked(False)
             self.rbtn_Grados.setChecked(True)
-            print 'datos: ',self.datos
-            print 'datos angulo ', self.datos_x_angulo
-            print 'espacio inter: ', self.datos_x_espacio
-            print 'datos_porcentual: ', self.datos_porcentual
+           # print 'datos: ',self.datos
+           # print 'datos angulo ', self.datos_x_angulo
+           # print 'espacio inter: ', self.datos_x_espacio
+           # print 'datos_porcentual: ', self.datos_porcentual
             self.curve.setData(self.xdatos,self.ydatos)
         except IOError as e:
             print 'no existe el archivo'
@@ -397,7 +398,9 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
     
     
     def btn_GuardarMedicion_clicked(self):
-        save_filename = QFileDialog.getSaveFileName(self, 'Guardar Archivo', 'c:\\')
+        save_filename = str(QFileDialog.getSaveFileName(self, 'Guardar Archivo', 'c:\\'))
+        if not save_filename.lower().endswith('.txt'):
+            save_filename = save_filename + '.txt'
         with open(save_filename,'w') as archivo:
             for i in range(len(self.datos)):
                 archivo.write( "%.2f" % self.datos[i] + '\t' + "%.2f" % self.datos_x_angulo[i] +'\t' + "%.4f" % self.datos_x_espacio[i] + '\n')
@@ -434,20 +437,31 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
                 self.datos_porcentual = [0 for valor in self.datos]
             self.datos_x_angulo = [int(self.cmb_AnguloInicial.currentText())-i*0.02 for i in range(len(self.datos_porcentual))]
             self.datos_x_espacio = [ float(self.lnedit_lambda.text())/(2*sin(radians(angulo/2))) for angulo in self.datos_x_angulo]
-            if self.rbtn_Absoluto.isChecked():
+            if self.rbtn_Absoluto.isChecked():  #Opciones para visualizar eje Y en valor Absoluto
                 self.ydatos = np.array(self.datos)
                 self.VentanaPlot.setLabel('left','Valor', units='mV')
-            else:
+            else:                               #Opciones para visualizar eje Y en valor Relativo
                 self.ydatos = np.array(self.datos_porcentual)
                 self.VentanaPlot.setLabel('left','Porcentual', units='%')
-            if self.rbtn_Espacio.isChecked():
+            if self.rbtn_Espacio.isChecked():   #Opciones para visualizar eje X en espacio interplanar
                 self.VentanaPlot.setLabel('bottom','Espacio Interplanar', units='Armstrong')
+                self.VentanaPlot.invertX(False)
                 self.xdatos = np.array(self.datos_x_espacio)
-            else:
+               # if not self.chk_Autoscale.isChecked():
+               #     self.VentanaPlot.setRange(xRange = (float(self.lnedit_lambda.text())/(2*sin(radians( int(self.cmb_AnguloFinal.currentText()) /2))),float(self.lnedit_lambda.text())/(2*sin(radians( int(self.cmb_AnguloFinal.currentText() )/2)))), disableAutoRange=True)
+               # else:
+               #     self.VentanaPlot.enableAutoRange=True
+            else:                               #Opciones para visualizar eje X en grados
                 self.xdatos = np.array(self.datos_x_angulo)
                 self.VentanaPlot.setLabel('bottom','Angulo', units='grados')
+                self.VentanaPlot.invertX(True)
+               # if not self.chk_Autoscale.isChecked():
+               #     self.VentanaPlot.setRange(xRange=(int(self.cmb_AnguloFinal.currentText()),int(self.cmb_AnguloInicial.currentText())), disableAutoRange=True)
+               # else:
+                #    self.VentanaPlot.enableAutoRange=True
             self.curve.setData(self.xdatos, self.ydatos)
-                
+            
+            
                 
     def mouseMoved(self,evt):
         """funcion que muestra un cursor en el grafico"""

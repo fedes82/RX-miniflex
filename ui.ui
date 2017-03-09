@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1168</width>
-    <height>695</height>
+    <width>1350</width>
+    <height>730</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -601,6 +601,25 @@
     </property>
    </widget>
   </widget>
+  <widget class="QCheckBox" name="chk_Autoscale">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>700</x>
+     <y>190</y>
+     <width>70</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Autoscale</string>
+   </property>
+   <property name="tristate">
+    <bool>false</bool>
+   </property>
+  </widget>
   <zorder>frame_2</zorder>
   <zorder>frame</zorder>
   <zorder>btn_Salir</zorder>
@@ -613,6 +632,7 @@
   <zorder>groupBox_2</zorder>
   <zorder>verticalLayoutWidget</zorder>
   <zorder>groupBox_3</zorder>
+  <zorder>chk_Autoscale</zorder>
  </widget>
  <customwidgets>
   <customwidget>
