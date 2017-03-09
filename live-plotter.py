@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python
 
 import sys
@@ -11,6 +12,7 @@ import numpy as np
 import pyqtgraph as pg
 from time import sleep
 from time import time
+from time import gmtime, strftime
 from decimal import *
 #//ver esto
 from PyQt4.QtCore import *
@@ -284,6 +286,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.rbtn_Relativo.setChecked(True)
         self.rbtn_Grados.setChecked(True)
         self.cmb_AnguloInicial.setCurrentIndex(5)
+        self.cmb_CPS.setCurrentIndex(3)
         self.lnedit_lambda.setText('1.5405')
         self.lnedit_lambda.setValidator(QDoubleValidator(0.0000,99.9999,4))
         puertos = serial_ports()
@@ -332,6 +335,9 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         """Crea thread con el monitor del pto serie, setea el timer 
         que actualiza el ploteo y deshabilita los botones que no se
         pueden usar mientras plotea"""
+        if self.lnedit_Muestra.text() == '':
+            self.msj_error_nombre_muestra()
+            return
         self.lbl_estado.setText ('CONECTADO')
         print self.combo_puertos.currentText()
         self.monitor_serie = mp.Process(target=Monitor_Serie_con_nl_y_mark, args=(str(self.combo_puertos.currentText()), self.q_datos, self.q_cerrar))
@@ -375,9 +381,14 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
                 texto = archivo.readlines()
             self.datos = []
             self.datos_x_angulo = []
+            if texto[0].startswith('MUESTRA'):
+                self.lnedit_Muestra.setText(texto.pop(0).split()[1])
+                self.lnedit_lambda.setText(texto.pop(0).split()[1])
+                for i in range(6):
+                    texto.pop(0)
             for linea in texto:
-                self.datos.append(float(linea.split()[0]))
-                self.datos_x_angulo.append(float(linea.split()[1]))
+                self.datos.append(float(linea.split()[1]))
+                self.datos_x_angulo.append(float(linea.split()[0]))
             self.datos_porcentual = [valor*100/max(self.datos)  for valor in self.datos]
             self.datos_x_espacio = [ float(self.lnedit_lambda.text())/(2*sin(radians(angulo/2))) for angulo in self.datos_x_angulo]
             self.ydatos = np.array(self.datos)
@@ -391,6 +402,14 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
            # print 'espacio inter: ', self.datos_x_espacio
            # print 'datos_porcentual: ', self.datos_porcentual
             self.curve.setData(self.xdatos,self.ydatos)
+            self.combo_puertos.setEnabled(False)
+            self.cmb_AnguloInicial.setEnabled(False)
+            self.cmb_AnguloFinal.setEnabled(False)
+            self.btn_Abrir_conexion.setEnabled(False)
+            self.cmb_CPS.setEnabled(False)
+            self.lnedit_Muestra.setEnabled(False)
+            self.btn_cerrar_conexion.setEnabled(False)
+            self.lnedit_lambda.setEnabled(False)
         except IOError as e:
             print 'no existe el archivo'
     
@@ -402,8 +421,17 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         if not save_filename.lower().endswith('.txt'):
             save_filename = save_filename + '.txt'
         with open(save_filename,'w') as archivo:
+            # ENCABEZADO
+            archivo.write('MUESTRA:\t'+self.lnedit_Muestra.text()+'\n')
+            archivo.write('LongRx:\t'+self.lnedit_lambda.text()+'\n')
+            archivo.write('CPS:\t'+self.cmb_CPS.currentText()+'\n')
+            archivo.write('Intervalo:\t'+self.cmb_AnguloFinal.currentText()+'-'+self.cmb_AnguloInicial.currentText()+'\n')
+            archivo.write('Fecha:\t'+strftime("%Y-%m-%d %H:%M:%S", gmtime())+'\n'+'\n')
+            archivo.write('2Theta\tINTENSIDAD\td'+'\n')
+            archivo.write('(º)\t(u.a.)\t(Armstrong)'+'\n')
+            #TABLA DE DATOS
             for i in range(len(self.datos)):
-                archivo.write( "%.2f" % self.datos[i] + '\t' + "%.2f" % self.datos_x_angulo[i] +'\t' + "%.4f" % self.datos_x_espacio[i] + '\n')
+                archivo.write( "%.2f" % self.datos_x_angulo[i] + '\t' +  "%.2f" % self.datos[i] +'\t' + "%.4f" % self.datos_x_espacio[i] + '\n')
         
     def btn_salir_clicked(self):
         self.btn_cerrar_conexion_clicked()
@@ -414,6 +442,13 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.datos = []
         self.cmb_AnguloInicial.setEnabled(True)
         self.cmb_AnguloFinal.setEnabled(True)
+        self.cmb_CPS.setEnabled(True)
+        self.combo_puertos.setEnabled(True)
+        self.btn_Abrir_conexion.setEnabled(True)
+        self.lnedit_Muestra.setEnabled(True)
+        self.btn_cerrar_conexion.setEnabled(False)
+        self.lnedit_lambda.setEnabled(True)
+        self.lnedit_lambda.setText('1.5405')
     
     
     def update_plot(self):
@@ -499,8 +534,20 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         msg.buttonClicked.connect(self.btn_cerrar_conexion_clicked)
         retval = msg.exec_()
      #  print "value of pressed message box button:", retval
-        
-        
+    
+    def msj_error_nombre_muestra(self):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        msg.setText("Datos incompletos")
+        msg.setInformativeText("Debe completar el campo MUESTRA \npara poder comenzar con la adquisición")
+        msg.setWindowTitle("Datos incompletos")
+        #msg.setDetailedText("The details are as follows:")
+        msg.setStandardButtons(QMessageBox.Ok)
+        #msg.buttonClicked.connect(self.btn_cerrar_conexion_clicked)
+        retval = msg.exec_()
+     #  print "value of pressed message box button:", retval
+    
+    
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
 
