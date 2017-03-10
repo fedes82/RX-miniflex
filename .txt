@@ -1,8 +1,0 @@
-MUESTRA:	
-LongRx:	1.5405
-CPS:	1000
-Intervalo:	0-50
-Fecha:	2017-03-09 18:58:22
-
-2Theta	INTENSIDAD	d
-(º)	(u.a.)	(Armstrong)

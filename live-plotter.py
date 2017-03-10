@@ -13,6 +13,7 @@ import pyqtgraph as pg
 from time import sleep
 from time import time
 from time import gmtime, strftime
+from os.path import expanduser
 from decimal import *
 #//ver esto
 from PyQt4.QtCore import *
@@ -283,7 +284,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.proxy = pg.SignalProxy(self.VentanaPlot.scene().sigMouseMoved, rateLimit=30, slot=self.mouseMoved)
         
         # Inicializo los widgets
-        self.rbtn_Relativo.setChecked(True)
+        self.rbtn_Absoluto.setChecked(True)
         self.rbtn_Grados.setChecked(True)
         self.cmb_AnguloInicial.setCurrentIndex(5)
         self.cmb_CPS.setCurrentIndex(3)
@@ -410,6 +411,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
             self.lnedit_Muestra.setEnabled(False)
             self.btn_cerrar_conexion.setEnabled(False)
             self.lnedit_lambda.setEnabled(False)
+            self.VentanaPlot.invertX(True)
         except IOError as e:
             print 'no existe el archivo'
     
@@ -417,7 +419,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
     
     
     def btn_GuardarMedicion_clicked(self):
-        save_filename = str(QFileDialog.getSaveFileName(self, 'Guardar Archivo', 'c:\\'))
+        save_filename = str(QFileDialog.getSaveFileName(self, 'Guardar Archivo', directory=expanduser("~")+'\\desktop\\<'+self.lnedit_Muestra.text()+'-'+self.cmb_CPS.currentText()+'CPS.txt'))
         if not save_filename.lower().endswith('.txt'):
             save_filename = save_filename + '.txt'
         with open(save_filename,'w') as archivo:
@@ -457,7 +459,9 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         se ejecuta en cada timeout del timer y toma los datos de una 
         queue que comparte con el thread del monitor del pto serie.
         Si lee de la queue la cadena 'sin conexion' supone que el adquisidor
-        no esta conectado, muestra el mensaje de error y cierra el thread del monitor"""
+        no esta conectado, muestra el mensaje de error y cierra el thread del monitor
+        
+        """
         if not self.q_datos.empty():
             while not self.q_datos.empty():
                 temp = self.q_datos.get()
@@ -472,6 +476,11 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
                 self.datos_porcentual = [0 for valor in self.datos]
             self.datos_x_angulo = [int(self.cmb_AnguloInicial.currentText())-i*0.02 for i in range(len(self.datos_porcentual))]
             self.datos_x_espacio = [ float(self.lnedit_lambda.text())/(2*sin(radians(angulo/2))) for angulo in self.datos_x_angulo]
+            # HABRIA QUE IMPLEMENTAR UN GUARDADO TEMPORAL EN UN ARCHIVO 
+            # POR SI OCURRE ALGO, PARA NO PERDER LOS DATOS DE LA MEDICION
+            #with open('temporal.txt','a') as archivo_temporal:
+            #    archivo_temporal.write( "%.2f" % self.datos_x_angulo[i] + '\t' +  "%.2f" % self.datos[i] +'\t' + "%.4f" % self.datos_x_espacio[i] + '\n')
+                
             if self.rbtn_Absoluto.isChecked():  #Opciones para visualizar eje Y en valor Absoluto
                 self.ydatos = np.array(self.datos)
                 self.VentanaPlot.setLabel('left','Valor', units='mV')
@@ -539,7 +548,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setText("Datos incompletos")
-        msg.setInformativeText("Debe completar el campo MUESTRA \npara poder comenzar con la adquisición")
+        msg.setInformativeText("Debe completar el campo MUESTRA \npara poder comenzar con la adquisicion")
         msg.setWindowTitle("Datos incompletos")
         #msg.setDetailedText("The details are as follows:")
         msg.setStandardButtons(QMessageBox.Ok)
