@@ -260,6 +260,8 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.btn_CargarMedicion.clicked.connect(self.btn_CargarMedicion_clicked)
         self.btn_GuardarMedicion.clicked.connect(self.btn_GuardarMedicion_clicked)
         self.btn_LimpiarPlot.clicked.connect(self.btn_LimpiarPlot_clicked)
+        self.btn_XReset.clicked.connect(self.btn_XReset_clicked)
+        self.btn_YReset.clicked.connect(self.btn_YReset_clicked)
         self.rbtn_Absoluto.clicked.connect(self.rbtn_Absoluto_clicked)
         self.rbtn_Relativo.clicked.connect(self.rbtn_Relativo_clicked)
         self.rbtn_Espacio.clicked.connect(self.rbtn_Espacio_clicked)
@@ -299,6 +301,26 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
     
      ###-------------- Acciones de los Botones
      
+    def btn_XReset_clicked(self):
+        if self.rbtn_Espacio.isChecked():
+            if int(self.cmb_AnguloInicial.currentText()):
+                min = float(self.lnedit_lambda.text())/(2*sin(radians(int(self.cmb_AnguloInicial.currentText())/2)))
+            else:
+                min = 0
+            max = float(self.lnedit_lambda.text())/(2*sin(radians(int(self.cmb_AnguloInicial.currentText())/2)))
+            self.VentanaPlot.setXRange(min,max,update=True)
+            self.VentanaPlot.invertX(False)
+        else:
+            self.VentanaPlot.setXRange(int(self.cmb_AnguloFinal.currentText()),int(self.cmb_AnguloInicial.currentText()),update=True)
+            self.VentanaPlot.invertX(True)
+    
+    
+    def btn_YReset_clicked(self):
+        if self.rbtn_Absoluto.isChecked():  #Opciones para visualizar eje Y en valor Absoluto
+            self.VentanaPlot.setYRange(0,1024,update=True)
+        else:
+            self.VentanaPlot.setYRange(0,100,update=True)
+    
      
     def rbtn_Absoluto_clicked(self):
         """cambia las unidades de las ordenadas al valor absoluto
@@ -306,6 +328,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.ydatos = np.array(self.datos)
         self.VentanaPlot.setLabel('left','Valor', units='mV')
         self.curve.setData(self.xdatos, self.ydatos)
+        self.btn_YReset_clicked()
 
         
     def rbtn_Relativo_clicked(self):
@@ -314,6 +337,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.ydatos = np.array(self.datos_porcentual)
         self.VentanaPlot.setLabel('left','Porcentual', units='%')
         self.curve.setData(self.xdatos, self.ydatos)
+        self.btn_YReset_clicked()
 
         
     def rbtn_Espacio_clicked(self):
@@ -322,7 +346,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.VentanaPlot.setLabel('bottom','Espacio Interplanar', units='Armstrong')
         self.xdatos = np.array(self.datos_x_espacio)
         self.curve.setData(self.xdatos, self.ydatos)
-
+        self.btn_XReset_clicked()
     
     def rbtn_Grados_clicked(self):
         """ cambia las unidades de la absisa, a grados
@@ -330,7 +354,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.xdatos = np.array(self.datos_x_angulo)
         self.VentanaPlot.setLabel('bottom','Angulo', units='grados')
         self.curve.setData(self.xdatos, self.ydatos)
-      
+        self.btn_XReset_clicked()
     
     def btn_Abrir_conexion_clicked(self):
         """Crea thread con el monitor del pto serie, setea el timer 
@@ -353,6 +377,8 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.btn_Abrir_conexion.setEnabled(False)
         self.btn_LimpiarPlot.setEnabled(False)
         self.btn_cerrar_conexion.setEnabled(True)
+        self.btn_XReset_clicked()
+        self.btn_YReset_clicked()
         
     def btn_cerrar_conexion_clicked(self):
         """ Indica al monitor serie que cierre la conexion y 

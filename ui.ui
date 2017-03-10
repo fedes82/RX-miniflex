@@ -110,7 +110,7 @@
      <x>740</x>
      <y>10</y>
      <width>161</width>
-     <height>91</height>
+     <height>121</height>
     </rect>
    </property>
    <property name="title">
@@ -152,6 +152,19 @@
      <string>Espacio Interplanar</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="btn_XReset">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>90</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Reset</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_2">
    <property name="geometry">
@@ -159,7 +172,7 @@
      <x>910</x>
      <y>10</y>
      <width>131</width>
-     <height>91</height>
+     <height>121</height>
     </rect>
    </property>
    <property name="title">
@@ -201,6 +214,19 @@
      <string>Valor Absoluto</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="btn_YReset">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>90</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Reset</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
@@ -231,7 +257,7 @@
    <property name="geometry">
     <rect>
      <x>740</x>
-     <y>110</y>
+     <y>130</y>
      <width>301</width>
      <height>61</height>
     </rect>
@@ -311,25 +337,6 @@
      <string/>
     </property>
    </widget>
-  </widget>
-  <widget class="QCheckBox" name="chk_Autoscale">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>600</x>
-     <y>140</y>
-     <width>70</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Autoscale</string>
-   </property>
-   <property name="tristate">
-    <bool>false</bool>
-   </property>
   </widget>
   <widget class="QLineEdit" name="lnedit_Muestra">
    <property name="geometry">
