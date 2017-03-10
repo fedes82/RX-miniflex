@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python
 
 import sys
@@ -11,6 +12,8 @@ import numpy as np
 import pyqtgraph as pg
 from time import sleep
 from time import time
+from time import gmtime, strftime
+from os.path import expanduser
 from decimal import *
 #//ver esto
 from PyQt4.QtCore import *
@@ -23,6 +26,18 @@ form_class = uic.loadUiType("ui.ui")[0]
 #eto es para usar 2 decimales
 #getcontext.prec=2
 
+def Comprobar_Conexion(puerto, q_datos,q_cerrar):
+    """ Esta funcion abre el puerto serie, envia una P (comando
+    para que responda el micro si hay conexion) y devuelve true si hay 
+    conexion o false si el micro no responde """
+    ser = serial.Serial(port=puerto, baudrate=9600,timeout=3)
+    sleep(0.1)
+    print 'el puerto se abrio?', ser
+    p = ''
+    ser.flushInput()
+    ser.flushOutput()
+    
+
 def Monitor_Serie(puerto, q_datos,q_cerrar):
     """Este thread se ocupa de leer el puerto paralelo
         - loop infinito que blockea hasta que lee una linea del pto serie
@@ -30,14 +45,38 @@ def Monitor_Serie(puerto, q_datos,q_cerrar):
         - cuando se pone algo en la cola q_cerrar, cierra todo y sale
         
     """
-    ser = serial.Serial(port=puerto, baudrate=9600,timeout=60)
+    ser = serial.Serial(port=puerto, baudrate=9600,timeout=1)
     sleep(0.1)
     print 'el puerto se abrio?', ser
     d = 0
     ser.flushInput()
     ser.flushOutput()
     sleep(0.5)
-    print 'envio ', ser.write('I'), ' bytes'
+    #Comprobacion de conexion, envio p, si hay timeout repito 10 veces
+    # si responde algo distinto de 'COM OK' o si no responde, hay error en
+    # comunicacion; aviso al prog principal y cierro puerto serie
+    t = ''
+    for i in range(10):
+        ser.write('P')
+        t = ser.read()
+        if len(t) > 0 :
+            sleep(0.05)
+            t = t + ser.read(ser.inWaiting())
+            break
+    if (len(t)== 0)  or (not t.startswith('COM OK')):
+        print 'error en la comunicacion'
+        q_datos.put('sin conexion')
+        q_cerrar.get()
+        q_cerrar.close()
+        q_datos.close()
+        d =0
+        t =0
+        ser.close()
+        ser.close()
+        print 'COMPROBAR CONEXION'
+        return
+    ser = serial.Serial(port=puerto, baudrate=9600,timeout=10)   
+    print 'envio ', ser.write('I'), ' bytes, comienzo medicion'
     while(q_cerrar.empty()):
         t = ser.read()
         ti = time()
@@ -112,18 +151,43 @@ def Monitor_Serie_con_nl(puerto, q_datos,q_cerrar):
     ser.close()
 
 def Monitor_Serie_con_nl_y_mark(puerto, q_datos,q_cerrar):
-    """Este thread se ocupa de leer el puerto paralelo
+    """Este thread se ocupa de leer el puerto serie
+        - Comprobacion de conexion, envia P 10 veces, si no recibe respuesta
+            o la respuesta es distinta de OK COM, avisa al prog principal
+            y cierra el puerto y el thread
         - loop infinito que blockea hasta que lee una linea del pto serie
         - cuando llega una nueva linea la pone en la cola q_datos
         - cuando se pone algo en la cola q_cerrar, cierra todo y sale
         
     """
-    ser = serial.Serial(port=puerto, baudrate=9600,timeout=60)
+    ser = serial.Serial(port=puerto, baudrate=9600,timeout=1.5)
     sleep(0.1)
     print 'el puerto se abrio?', ser
     ser.flushInput()
     ser.flushOutput()
-    sleep(1)
+    t = ''
+    for i in range(10):
+        ser.write('P')
+        t = ser.read()
+        if len(t) > 0 :
+            sleep(0.05)
+            t = t + ser.read(ser.inWaiting())
+            break
+        print 'timeout comprobar conexion'
+    if (len(t)== 0)  or (not t.startswith('COM OK')):
+        print 'error en la comunicacion'
+        q_datos.put('sin conexion')
+        q_cerrar.get()
+        q_cerrar.close()
+        q_datos.close()
+        d =0
+        t =0
+        ser.close()
+        ser.close()
+        print 'COMPROBAR CONEXION'
+        return
+    print 'Conexion OK'
+    ser.timeout = 30
     print 'envio ', ser.write('I'), ' bytes'
     while(q_cerrar.empty()):
         t = ser.readline()
@@ -200,6 +264,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.rbtn_Relativo.clicked.connect(self.rbtn_Relativo_clicked)
         self.rbtn_Espacio.clicked.connect(self.rbtn_Espacio_clicked)
         self.rbtn_Grados.clicked.connect(self.rbtn_Grados_clicked)
+        #self.chk_Autoscale.clicked.connect()
         
         #esto es para el grafico, curve es el graf propiamente dicho y timer 
         # es lo que uso para actualizarlo
@@ -207,10 +272,22 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_plot)
         
+        #pra el cursor
+        #cross hair
+        self.vLine = pg.InfiniteLine(angle=90, movable=False)
+        self.hLine = pg.InfiniteLine(angle=0, movable=False)
+        self.VentanaPlot.addItem(self.vLine, ignoreBounds=True)
+        self.VentanaPlot.addItem(self.hLine, ignoreBounds=True)
+        self.vb = self.VentanaPlot.plotItem.vb
+        # en el proxy este, que hay que ver bien que hace, el ratelimit me sirve para
+        # limitar las actualizaciones por segundo, para que no se tare el programa
+        self.proxy = pg.SignalProxy(self.VentanaPlot.scene().sigMouseMoved, rateLimit=30, slot=self.mouseMoved)
+        
         # Inicializo los widgets
-        self.rbtn_Relativo.setChecked(True)
+        self.rbtn_Absoluto.setChecked(True)
         self.rbtn_Grados.setChecked(True)
         self.cmb_AnguloInicial.setCurrentIndex(5)
+        self.cmb_CPS.setCurrentIndex(3)
         self.lnedit_lambda.setText('1.5405')
         self.lnedit_lambda.setValidator(QDoubleValidator(0.0000,99.9999,4))
         puertos = serial_ports()
@@ -259,6 +336,9 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         """Crea thread con el monitor del pto serie, setea el timer 
         que actualiza el ploteo y deshabilita los botones que no se
         pueden usar mientras plotea"""
+        if self.lnedit_Muestra.text() == '':
+            self.msj_error_nombre_muestra()
+            return
         self.lbl_estado.setText ('CONECTADO')
         print self.combo_puertos.currentText()
         self.monitor_serie = mp.Process(target=Monitor_Serie_con_nl_y_mark, args=(str(self.combo_puertos.currentText()), self.q_datos, self.q_cerrar))
@@ -272,7 +352,8 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.cmb_AnguloFinal.setEnabled(False)
         self.btn_Abrir_conexion.setEnabled(False)
         self.btn_LimpiarPlot.setEnabled(False)
-    
+        self.btn_cerrar_conexion.setEnabled(True)
+        
     def btn_cerrar_conexion_clicked(self):
         """ Indica al monitor serie que cierre la conexion y 
            rehabilita los botones que deshabilito iniciar sesion"""
@@ -301,9 +382,14 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
                 texto = archivo.readlines()
             self.datos = []
             self.datos_x_angulo = []
+            if texto[0].startswith('MUESTRA'):
+                self.lnedit_Muestra.setText(texto.pop(0).split()[1])
+                self.lnedit_lambda.setText(texto.pop(0).split()[1])
+                for i in range(6):
+                    texto.pop(0)
             for linea in texto:
-                self.datos.append(float(linea.split()[0]))
-                self.datos_x_angulo.append(float(linea.split()[1]))
+                self.datos.append(float(linea.split()[1]))
+                self.datos_x_angulo.append(float(linea.split()[0]))
             self.datos_porcentual = [valor*100/max(self.datos)  for valor in self.datos]
             self.datos_x_espacio = [ float(self.lnedit_lambda.text())/(2*sin(radians(angulo/2))) for angulo in self.datos_x_angulo]
             self.ydatos = np.array(self.datos)
@@ -312,11 +398,20 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
             self.rbtn_Relativo.setChecked(False)
             self.rbtn_Espacio.setChecked(False)
             self.rbtn_Grados.setChecked(True)
-            print 'datos: ',self.datos
-            print 'datos angulo ', self.datos_x_angulo
-            print 'espacio inter: ', self.datos_x_espacio
-            print 'datos_porcentual: ', self.datos_porcentual
+           # print 'datos: ',self.datos
+           # print 'datos angulo ', self.datos_x_angulo
+           # print 'espacio inter: ', self.datos_x_espacio
+           # print 'datos_porcentual: ', self.datos_porcentual
             self.curve.setData(self.xdatos,self.ydatos)
+            self.combo_puertos.setEnabled(False)
+            self.cmb_AnguloInicial.setEnabled(False)
+            self.cmb_AnguloFinal.setEnabled(False)
+            self.btn_Abrir_conexion.setEnabled(False)
+            self.cmb_CPS.setEnabled(False)
+            self.lnedit_Muestra.setEnabled(False)
+            self.btn_cerrar_conexion.setEnabled(False)
+            self.lnedit_lambda.setEnabled(False)
+            self.VentanaPlot.invertX(True)
         except IOError as e:
             print 'no existe el archivo'
     
@@ -324,10 +419,21 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
     
     
     def btn_GuardarMedicion_clicked(self):
-        save_filename = QFileDialog.getSaveFileName(self, 'Guardar Archivo', 'c:\\')
+        save_filename = str(QFileDialog.getSaveFileName(self, 'Guardar Archivo', directory=expanduser("~")+'\\desktop\\<'+self.lnedit_Muestra.text()+'-'+self.cmb_CPS.currentText()+'CPS.txt'))
+        if not save_filename.lower().endswith('.txt'):
+            save_filename = save_filename + '.txt'
         with open(save_filename,'w') as archivo:
+            # ENCABEZADO
+            archivo.write('MUESTRA:\t'+self.lnedit_Muestra.text()+'\n')
+            archivo.write('LongRx:\t'+self.lnedit_lambda.text()+'\n')
+            archivo.write('CPS:\t'+self.cmb_CPS.currentText()+'\n')
+            archivo.write('Intervalo:\t'+self.cmb_AnguloFinal.currentText()+'-'+self.cmb_AnguloInicial.currentText()+'\n')
+            archivo.write('Fecha:\t'+strftime("%Y-%m-%d %H:%M:%S", gmtime())+'\n'+'\n')
+            archivo.write('2Theta\tINTENSIDAD\td'+'\n')
+            archivo.write('(º)\t(u.a.)\t(Armstrong)'+'\n')
+            #TABLA DE DATOS
             for i in range(len(self.datos)):
-                archivo.write( "%.2f" % self.datos[i] + '\t' + "%.2f" % self.datos_x_angulo[i] +'\t' + "%.4f" % self.datos_x_espacio[i] + '\n')
+                archivo.write( "%.2f" % self.datos_x_angulo[i] + '\t' +  "%.2f" % self.datos[i] +'\t' + "%.4f" % self.datos_x_espacio[i] + '\n')
         
     def btn_salir_clicked(self):
         self.btn_cerrar_conexion_clicked()
@@ -338,38 +444,119 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.datos = []
         self.cmb_AnguloInicial.setEnabled(True)
         self.cmb_AnguloFinal.setEnabled(True)
+        self.cmb_CPS.setEnabled(True)
+        self.combo_puertos.setEnabled(True)
+        self.btn_Abrir_conexion.setEnabled(True)
+        self.lnedit_Muestra.setEnabled(True)
+        self.btn_cerrar_conexion.setEnabled(False)
+        self.lnedit_lambda.setEnabled(True)
+        self.lnedit_lambda.setText('1.5405')
     
     
     def update_plot(self):
         """ Este es el algoritmo que toma los datos y los formatea
         para mostrarlo en el grafico, 
         se ejecuta en cada timeout del timer y toma los datos de una 
-        queue que comparte con el thread del monitor del pto serie"""
+        queue que comparte con el thread del monitor del pto serie.
+        Si lee de la queue la cadena 'sin conexion' supone que el adquisidor
+        no esta conectado, muestra el mensaje de error y cierra el thread del monitor
+        
+        """
         if not self.q_datos.empty():
             while not self.q_datos.empty():
-                self.datos.append(self.q_datos.get())
+                temp = self.q_datos.get()
+                if temp == 'sin conexion':
+                    self.msj_error_conexion()
+                    return
+                else:
+                    self.datos.append(temp)
             if max(self.datos):
                 self.datos_porcentual = [valor*100/max(self.datos)  for valor in self.datos]
             else:
                 self.datos_porcentual = [0 for valor in self.datos]
             self.datos_x_angulo = [int(self.cmb_AnguloInicial.currentText())-i*0.02 for i in range(len(self.datos_porcentual))]
             self.datos_x_espacio = [ float(self.lnedit_lambda.text())/(2*sin(radians(angulo/2))) for angulo in self.datos_x_angulo]
-            if self.rbtn_Absoluto.isChecked():
+            # HABRIA QUE IMPLEMENTAR UN GUARDADO TEMPORAL EN UN ARCHIVO 
+            # POR SI OCURRE ALGO, PARA NO PERDER LOS DATOS DE LA MEDICION
+            #with open('temporal.txt','a') as archivo_temporal:
+            #    archivo_temporal.write( "%.2f" % self.datos_x_angulo[i] + '\t' +  "%.2f" % self.datos[i] +'\t' + "%.4f" % self.datos_x_espacio[i] + '\n')
+                
+            if self.rbtn_Absoluto.isChecked():  #Opciones para visualizar eje Y en valor Absoluto
                 self.ydatos = np.array(self.datos)
                 self.VentanaPlot.setLabel('left','Valor', units='mV')
-            else:
+            else:                               #Opciones para visualizar eje Y en valor Relativo
                 self.ydatos = np.array(self.datos_porcentual)
                 self.VentanaPlot.setLabel('left','Porcentual', units='%')
-            if self.rbtn_Espacio.isChecked():
+            if self.rbtn_Espacio.isChecked():   #Opciones para visualizar eje X en espacio interplanar
                 self.VentanaPlot.setLabel('bottom','Espacio Interplanar', units='Armstrong')
+                self.VentanaPlot.invertX(False)
                 self.xdatos = np.array(self.datos_x_espacio)
-            else:
+               # if not self.chk_Autoscale.isChecked():
+               #     self.VentanaPlot.setRange(xRange = (float(self.lnedit_lambda.text())/(2*sin(radians( int(self.cmb_AnguloFinal.currentText()) /2))),float(self.lnedit_lambda.text())/(2*sin(radians( int(self.cmb_AnguloFinal.currentText() )/2)))), disableAutoRange=True)
+               # else:
+               #     self.VentanaPlot.enableAutoRange=True
+            else:                               #Opciones para visualizar eje X en grados
                 self.xdatos = np.array(self.datos_x_angulo)
                 self.VentanaPlot.setLabel('bottom','Angulo', units='grados')
+                self.VentanaPlot.invertX(True)
+               # if not self.chk_Autoscale.isChecked():
+               #     self.VentanaPlot.setRange(xRange=(int(self.cmb_AnguloFinal.currentText()),int(self.cmb_AnguloInicial.currentText())), disableAutoRange=True)
+               # else:
+                #    self.VentanaPlot.enableAutoRange=True
             self.curve.setData(self.xdatos, self.ydatos)
-                
             
+            
+                
+    def mouseMoved(self,evt):
+        """funcion que muestra un cursor en el grafico"""
+        #print evt[0]
+        pos = evt[0]  ## using signal proxy turns original arguments into a tuple
+       # print pos
+       # print self.VentanaPlot.sceneBoundingRect()
+       # print self.VentanaPlot.sceneBoundingRect().contains(pos)
+        if self.VentanaPlot.sceneBoundingRect().contains(pos):
+            #print 'ventanaplot contiene a pos'
+            mousePoint = self.vb.mapSceneToView(pos)
+            #index = int(mousePoint.x())
+            #print 'indice', index
+            #print mousePoint.y() ,mousePoint.x()
+            #if index > 0 and index < len(self.ydatos):
+            #    print 'indice bien'
+                #self.lbl_valX.setText('%0.3f' % mousePoint.x())
+                #self.lbl_valY.setText('%0.3f' % self.ydatos[index])
+                #self.lbl_valX.setText('%0.3f' % mousePoint.x())
+                #label.setText("<span style='font-size: 12pt'>x=%0.1f,   <span style='color: red'>y1=%0.1f</span>,   <span style='color: green'>y2=%0.1f</span>" % (mousePoint.x(), data1[index], data2[index]))
+            self.lbl_valX.setText('%0.3f' % mousePoint.x())
+            self.lbl_valY.setText('%0.3f' % mousePoint.y())
+            self.vLine.setPos(mousePoint.x())
+            self.hLine.setPos(mousePoint.y())
+        #    print self.ydatos        
 
+    def msj_error_conexion(self):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("Error de conexion")
+        msg.setInformativeText("El adquisidor no responde.\n Compruebe que el adquisidor este\n encendido y conectado\n y que el puerto seleccionado sea el correcto.")
+        msg.setWindowTitle("Error de conexion")
+        #msg.setDetailedText("The details are as follows:")
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.buttonClicked.connect(self.btn_cerrar_conexion_clicked)
+        retval = msg.exec_()
+     #  print "value of pressed message box button:", retval
+    
+    def msj_error_nombre_muestra(self):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        msg.setText("Datos incompletos")
+        msg.setInformativeText("Debe completar el campo MUESTRA \npara poder comenzar con la adquisicion")
+        msg.setWindowTitle("Datos incompletos")
+        #msg.setDetailedText("The details are as follows:")
+        msg.setStandardButtons(QMessageBox.Ok)
+        #msg.buttonClicked.connect(self.btn_cerrar_conexion_clicked)
+        retval = msg.exec_()
+     #  print "value of pressed message box button:", retval
+    
+    
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
 
