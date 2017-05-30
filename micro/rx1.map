@@ -1,0 +1,20 @@
+RAM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+compareH                                                          0x0160       1
+compareL                                                          0x0161       1
+Espero_300ms                                                      0x0162       2
+temptest                                                          0x0164       2
+
+EEPROM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                          Register  Size
+--------------------------------------------------------------------------------
+conv                                                              R4,R5        2
+caracter                                                          R7           1
+temp                                                              R6           1
+i                                                                 R8,R9        2
+nropulso                                                          R10,R11      2

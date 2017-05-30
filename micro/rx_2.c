@@ -58,11 +58,13 @@ interrupt [TIM1_COMPA] void timer1_compa_isr(void)
 
 void main(void)
 {
-
+    beeper();
     configurar();
-
+    beeper();
+    beeper();
 while(1) //loop principal
 {   inicio:
+    beep = 1;
     caracter = getchar();
     switch (caracter)
     {
@@ -76,16 +78,17 @@ while(1) //loop principal
             TCCR1B=0x00;    //el timer esta apagado
             TCNT1H=0x00;    // y el contador vale cero   
             TCNT1L=0x00;
+            beeper();
             while (1)
             {
                 nropulso = 0;
                 Espero_300ms = 1;
                 while(pulso == 1); //espera marker en bajo para empezar
-                printf("mark\n");
+                //printf("mark\n");
                 TCCR1B=0x0C;    //con esto enciendo el timer
                 mide();            // 80 mseg
                 //Rx=(float)conv*2560/1023;   
-                nropulso++;
+                //nropulso++;
                 //printf("%.2f\n",Rx); // 16.6 mseg en transmitir
                 //printf("pulso nro %d\n", nropulso);
                 printf("%d\n",conv);
@@ -96,7 +99,7 @@ while(1) //loop principal
                     Espero_300ms = 1;   //
                     mide();            // 80 mseg
                     //Rx=(float)conv*2560/1023; 
-                    nropulso++;
+                    //nropulso++;
                     //printf("%.2f\n",Rx); // 16.6 mseg en transmitir
                     printf("%d\n",conv);
                  //   printf("pulso nro %d\n", nropulso);
@@ -248,9 +251,12 @@ void configurar(void)
     ICR1H=0x00;
     ICR1L=0x00;              
     //compareH = 0x21;   
-    //compareL =0xAD;
-    compareH = 0x10;   
-    compareL =0xD6;
+    //compareL =0xAD;  
+    //  el valor haciendo cuentas me de h21C0, para un prescaler de 256, que es lo que esta elegido
+    //   el valor que esta puesto es bajisimo, es h10d6, probemos, 
+    //   sino probemos con h10e0 que anda por ahi
+    compareH = 0x21;   
+    compareL =0xAD;
     OCR1AH=compareH;
     OCR1AL=compareL;
     OCR1BH=0x00;
@@ -270,8 +276,10 @@ void configurar(void)
   {
     beep = 0;
     delay_ms(50); 
-    if(conv < 799) beep = 1; // si es manor a 2v = 799 cuentas apaga 
+    if(conv < 799){ beep = 1;} // si es manor a 2v = 799 cuentas apaga 
     //delay_ms(150);
+   
+    
   }
 
  /*------------------ FUNCION MIDE ----------------*/
