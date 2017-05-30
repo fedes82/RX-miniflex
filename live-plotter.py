@@ -26,129 +26,129 @@ form_class = uic.loadUiType("ui.ui")[0]
 #eto es para usar 2 decimales
 #getcontext.prec=2
 
-def Comprobar_Conexion(puerto, q_datos,q_cerrar):
-    """ Esta funcion abre el puerto serie, envia una P (comando
-    para que responda el micro si hay conexion) y devuelve true si hay 
-    conexion o false si el micro no responde """
-    ser = serial.Serial(port=puerto, baudrate=9600,timeout=3)
-    sleep(0.1)
-    print 'el puerto se abrio?', ser
-    p = ''
-    ser.flushInput()
-    ser.flushOutput()
+# def Comprobar_Conexion(puerto, q_datos,q_cerrar):
+    # """ Esta funcion abre el puerto serie, envia una P (comando
+    # para que responda el micro si hay conexion) y devuelve true si hay 
+    # conexion o false si el micro no responde """
+    # ser = serial.Serial(port=puerto, baudrate=9600,timeout=3)
+    # sleep(0.1)
+    # print 'el puerto se abrio?', ser
+    # p = ''
+    # ser.flushInput()
+    # ser.flushOutput()
     
 
-def Monitor_Serie(puerto, q_datos,q_cerrar):
-    """Este thread se ocupa de leer el puerto paralelo
-        - loop infinito que blockea hasta que lee una linea del pto serie
-        - cuando llega una nueva linea la pone en la cola q_datos
-        - cuando se pone algo en la cola q_cerrar, cierra todo y sale
+# def Monitor_Serie(puerto, q_datos,q_cerrar):
+    # """Este thread se ocupa de leer el puerto paralelo
+        # - loop infinito que blockea hasta que lee una linea del pto serie
+        # - cuando llega una nueva linea la pone en la cola q_datos
+        # - cuando se pone algo en la cola q_cerrar, cierra todo y sale
         
-    """
-    ser = serial.Serial(port=puerto, baudrate=9600,timeout=1)
-    sleep(0.1)
-    print 'el puerto se abrio?', ser
-    d = 0
-    ser.flushInput()
-    ser.flushOutput()
-    sleep(0.5)
-    #Comprobacion de conexion, envio p, si hay timeout repito 10 veces
-    # si responde algo distinto de 'COM OK' o si no responde, hay error en
-    # comunicacion; aviso al prog principal y cierro puerto serie
-    t = ''
-    for i in range(10):
-        ser.write('P')
-        t = ser.read()
-        if len(t) > 0 :
-            sleep(0.05)
-            t = t + ser.read(ser.inWaiting())
-            break
-    if (len(t)== 0)  or (not t.startswith('COM OK')):
-        print 'error en la comunicacion'
-        q_datos.put('sin conexion')
-        q_cerrar.get()
-        q_cerrar.close()
-        q_datos.close()
-        d =0
-        t =0
-        ser.close()
-        ser.close()
-        print 'COMPROBAR CONEXION'
-        return
-    ser = serial.Serial(port=puerto, baudrate=9600,timeout=10)   
-    print 'envio ', ser.write('I'), ' bytes, comienzo medicion'
-    while(q_cerrar.empty()):
-        t = ser.read()
-        ti = time()
-        if len(t) > 0 :
-            sleep(0.05)
-            print 'quedan ', ser.inWaiting(), ' bytes'
-            print 'recibi' ,t
-           # while not t == '.':
-           #     d = 10 * d + int(t)
-           #     t = ser.read()
-           # print 'tengo punto'
-           # t = ser.read()
-           # d = d + (t*0.1)
-           # t = ser.read()
-           # d = d + (t*0.01)
-            t = t + ser.read(ser.inWaiting())
-            print t
-           # print d
-            q_datos.put(float(t))
-            # avanza a 0.5 grados por minuto, tonces muestreo cada 
-            sleep(0.232)
-            ser.write('1')
-            ser.timeout = 1
-        else:
-            ser.timeout = 1
-            print 'timeout'
-        tf = time()
-        print 'tarde: ', tf-ti, 'en recibir el dato'
-    print 'cierro puerto y proceso comunicacion'
-    q_cerrar.get()
-    q_cerrar.close()
-    q_datos.close()
-    ser.write('T')
-    d =0
-    t =0
-    ser.close()
-    ser.close()
+    # """
+    # ser = serial.Serial(port=puerto, baudrate=9600,timeout=1)
+    # sleep(0.1)
+    # print 'el puerto se abrio?', ser
+    # d = 0
+    # ser.flushInput()
+    # ser.flushOutput()
+    # sleep(0.5)
+    # #Comprobacion de conexion, envio p, si hay timeout repito 10 veces
+    # # si responde algo distinto de 'COM OK' o si no responde, hay error en
+    # # comunicacion; aviso al prog principal y cierro puerto serie
+    # t = ''
+    # for i in range(10):
+        # ser.write('P')
+        # t = ser.read()
+        # if len(t) > 0 :
+            # sleep(0.05)
+            # t = t + ser.read(ser.inWaiting())
+            # break
+    # if (len(t)== 0)  or (not t.startswith('COM OK')):
+        # print 'error en la comunicacion'
+        # q_datos.put('sin conexion')
+        # q_cerrar.get()
+        # q_cerrar.close()
+        # q_datos.close()
+        # d =0
+        # t =0
+        # ser.close()
+        # ser.close()
+        # print 'COMPROBAR CONEXION'
+        # return
+    # ser = serial.Serial(port=puerto, baudrate=9600,timeout=10)   
+    # print 'envio ', ser.write('I'), ' bytes, comienzo medicion'
+    # while(q_cerrar.empty()):
+        # t = ser.read()
+        # ti = time()
+        # if len(t) > 0 :
+            # sleep(0.05)
+            # print 'quedan ', ser.inWaiting(), ' bytes'
+            # print 'recibi' ,t
+           # # while not t == '.':
+           # #     d = 10 * d + int(t)
+           # #     t = ser.read()
+           # # print 'tengo punto'
+           # # t = ser.read()
+           # # d = d + (t*0.1)
+           # # t = ser.read()
+           # # d = d + (t*0.01)
+            # t = t + ser.read(ser.inWaiting())
+            # print t
+           # # print d
+            # q_datos.put(float(t))
+            # # avanza a 0.5 grados por minuto, tonces muestreo cada 
+            # sleep(0.232)
+            # ser.write('1')
+            # ser.timeout = 1
+        # else:
+            # ser.timeout = 1
+            # print 'timeout'
+        # tf = time()
+        # print 'tarde: ', tf-ti, 'en recibir el dato'
+    # print 'cierro puerto y proceso comunicacion'
+    # q_cerrar.get()
+    # q_cerrar.close()
+    # q_datos.close()
+    # ser.write('T')
+    # d =0
+    # t =0
+    # ser.close()
+    # ser.close()
 
-def Monitor_Serie_con_nl(puerto, q_datos,q_cerrar):
-    """Este thread se ocupa de leer el puerto paralelo
-        - loop infinito que blockea hasta que lee una linea del pto serie
-        - cuando llega una nueva linea la pone en la cola q_datos
-        - cuando se pone algo en la cola q_cerrar, cierra todo y sale
+# def Monitor_Serie_con_nl(puerto, q_datos,q_cerrar):
+    # """Este thread se ocupa de leer el puerto paralelo
+        # - loop infinito que blockea hasta que lee una linea del pto serie
+        # - cuando llega una nueva linea la pone en la cola q_datos
+        # - cuando se pone algo en la cola q_cerrar, cierra todo y sale
         
-    """
-    ser = serial.Serial(port=puerto, baudrate=9600,timeout=60)
-    sleep(0.1)
-    print 'el puerto se abrio?', ser
-    ser.flushInput()
-    ser.flushOutput()
-    sleep(1)
-    print 'envio ', ser.write('I'), ' bytes'
-    while(q_cerrar.empty()):
-        t = ser.readline()
-        if len(t) > 0 :
-            print 'recibi: ',t
-            q_datos.put(float(t))
-                # avanza a 0.5 grados por minuto, tonces muestreo cada 
-            sleep(0.29)
-            ser.write('1')
-            ser.timeout = 1
-        else:
-            ser.timeout = 1
-            print 'timeout'
-    print 'cierro puerto y proceso comunicacion'
-    q_cerrar.get()
-    q_cerrar.close()
-    q_datos.close()
-    ser.write('T')
-    t =0
-    ser.close()
-    ser.close()
+    # """
+    # ser = serial.Serial(port=puerto, baudrate=9600,timeout=60)
+    # sleep(0.1)
+    # print 'el puerto se abrio?', ser
+    # ser.flushInput()
+    # ser.flushOutput()
+    # sleep(1)
+    # print 'envio ', ser.write('I'), ' bytes'
+    # while(q_cerrar.empty()):
+        # t = ser.readline()
+        # if len(t) > 0 :
+            # print 'recibi: ',t
+            # q_datos.put(float(t))
+                # # avanza a 0.5 grados por minuto, tonces muestreo cada 
+            # sleep(0.29)
+            # ser.write('1')
+            # ser.timeout = 1
+        # else:
+            # ser.timeout = 1
+            # print 'timeout'
+    # print 'cierro puerto y proceso comunicacion'
+    # q_cerrar.get()
+    # q_cerrar.close()
+    # q_datos.close()
+    # ser.write('T')
+    # t =0
+    # ser.close()
+    # ser.close()
 
 def Monitor_Serie_con_nl_y_mark(puerto, q_datos,q_cerrar):
     """Este thread se ocupa de leer el puerto serie
@@ -189,10 +189,11 @@ def Monitor_Serie_con_nl_y_mark(puerto, q_datos,q_cerrar):
     print 'Conexion OK'
     ser.timeout = 30
     print 'envio ', ser.write('I'), ' bytes'
+    print 'queue vacia:',q_cerrar.empty()
     while(q_cerrar.empty()):
         t = ser.readline()
         if len(t) > 0 :
-            if not t.startswith('mark'):
+            if not t.startswith('f'):
                 print 'recibi: ',t
                 q_datos.put(float(t))
                     # avanza a 2 grados por minuto, tonces muestreo cada 
@@ -204,6 +205,7 @@ def Monitor_Serie_con_nl_y_mark(puerto, q_datos,q_cerrar):
             print 'timeout'
     print 'cierro puerto y proceso comunicacion'
     q_cerrar.get()
+    print 'queue vacia:',q_cerrar.empty()
     q_cerrar.close()
     q_datos.close()
     ser.write('T')
@@ -360,6 +362,8 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         """Crea thread con el monitor del pto serie, setea el timer 
         que actualiza el ploteo y deshabilita los botones que no se
         pueden usar mientras plotea"""
+        self.q_datos = mp.Queue()
+        self.q_cerrar = mp.Queue()
         if self.lnedit_Muestra.text() == '':
             self.msj_error_nombre_muestra()
             return
@@ -386,10 +390,9 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.lbl_estado.setText( 'DESCONECTADO')
         self.q_datos
         self.q_cerrar.put('s')
-        try:
-            self.monitor_serie.join()
-        except:
-            pass
+        self.monitor_serie.join()
+        self.q_datos.close()
+        self.q_cerrar.close()
         #Aca detengo el timer que actualiza el plot
         self.timer.stop()
         self.btn_GuardarMedicion.setEnabled(True)
