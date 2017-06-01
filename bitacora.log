@@ -1,0 +1,41 @@
+2017-06-01 15:15:08,697 - MainThread - INFO - ---------------------------------------------------
+2017-06-01 15:15:08,697 - MainThread - INFO - Inicio Programa RX
+2017-06-01 15:15:08,987 - MainThread - INFO - Los puertos disponibles son: ['COM1', 'COM3']
+2017-06-01 15:15:20,122 - MainThread - WARNING - Falta completar campo MUESTRA para iniciar adquisicion
+2017-06-01 15:16:30,525 - MainThread - INFO - Abro conexion, utilizo puerto: COM1
+2017-06-01 15:16:31,476 - MainThread - INFO - ---------------------------------------------------
+2017-06-01 15:16:31,476 - MainThread - INFO - Inicio Programa RX
+2017-06-01 15:16:31,617 - MainThread - INFO - Inicio monitor del puerto serie
+2017-06-01 15:16:31,617 - MainThread - INFO - Pto Serie: 
+Serial<id=0x1884d10, open=True>(port='COM1', baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=1.5, xonxoff=False, rtscts=False, dsrdtr=False)
+2017-06-01 15:16:31,680 - MainThread - INFO - Conexion OK
+2017-06-01 15:17:11,405 - MainThread - INFO - Cierro conexion con adquisidor
+2017-06-01 15:17:11,578 - MainThread - INFO - Cierro conexion y thread del monitor
+2017-06-01 15:32:52,247 - MainThread - INFO - Cierro conexion con adquisidor
+2017-06-01 15:32:52,247 - MainThread - INFO - Cierro Programa RX
+2017-06-01 15:32:52,247 - MainThread - INFO - *********************************
+2017-06-01 15:32:56,229 - MainProcess - INFO - ---------------------------------------------------
+2017-06-01 15:32:56,229 - MainProcess - INFO - Inicio Programa RX
+2017-06-01 15:32:56,506 - MainProcess - INFO - Los puertos disponibles son: ['COM1', 'COM3']
+2017-06-01 15:33:08,499 - MainProcess - INFO - Abro conexion, utilizo puerto: COM1
+2017-06-01 15:33:09,418 - monitor_pto_serie - INFO - ---------------------------------------------------
+2017-06-01 15:33:09,418 - monitor_pto_serie - INFO - Inicio Programa RX
+2017-06-01 15:33:09,559 - monitor_pto_serie - INFO - Inicio monitor del puerto serie
+2017-06-01 15:33:09,559 - monitor_pto_serie - INFO - Pto Serie: 
+Serial<id=0x1904cb0, open=True>(port='COM1', baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=1.5, xonxoff=False, rtscts=False, dsrdtr=False)
+2017-06-01 15:33:09,621 - monitor_pto_serie - INFO - Conexion OK
+2017-06-01 15:33:43,697 - MainProcess - INFO - Cierro conexion con adquisidor
+2017-06-01 15:33:43,868 - monitor_pto_serie - INFO - Cierro conexion y thread del monitor
+2017-06-01 15:52:25,438 - MainProcess - INFO - Cambio absisas a espacio interplanar
+2017-06-01 15:52:26,266 - MainProcess - INFO - Cambio absisas a grados
+2017-06-01 15:52:26,890 - MainProcess - INFO - Cambio coordenadas a valor absoluto
+2017-06-01 15:52:27,279 - MainProcess - INFO - Cambio coordenadas a valor relativo
+2017-06-01 15:52:27,732 - MainProcess - INFO - Cambio coordenadas a valor absoluto
+2017-06-01 15:52:28,776 - MainProcess - INFO - Cambio absisas a espacio interplanar
+2017-06-01 15:52:29,230 - MainProcess - INFO - Cambio absisas a grados
+2017-06-01 15:52:34,532 - MainProcess - INFO - Cierro conexion con adquisidor
+2017-06-01 15:52:35,266 - MainProcess - INFO - Cierro conexion con adquisidor
+2017-06-01 15:52:35,437 - MainProcess - INFO - Cierro conexion con adquisidor
+2017-06-01 15:52:36,467 - MainProcess - INFO - Cierro conexion con adquisidor
+2017-06-01 15:52:36,467 - MainProcess - INFO - Cierro Programa RX
+2017-06-01 15:52:36,467 - MainProcess - INFO - *********************************
