@@ -20,9 +20,25 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from math import sin,radians
 
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# create a file handler
+handler = logging.FileHandler('bitacora.log')
+handler.setLevel(logging.INFO)
+
+# create a logging format
+formatter = logging.Formatter('%(asctime)s - %(processName)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+
+# add the handlers to the logger
+logger.addHandler(handler)
 # Cargar nuestro archivo .ui
 form_class = uic.loadUiType("ui.ui")[0]
-
+logger.info('---------------------------------------------------')
+logger.info('Inicio Programa RX')
 #eto es para usar 2 decimales
 #getcontext.prec=2
 
@@ -162,6 +178,8 @@ def Monitor_Serie_con_nl_y_mark(puerto, q_datos,q_cerrar):
     """
     ser = serial.Serial(port=puerto, baudrate=9600,timeout=1.5)
     sleep(0.1)
+    logger.info('Inicio monitor del puerto serie')
+    logger.info('Pto Serie: \n{}'.format(ser))
     print 'el puerto se abrio?', ser
     ser.flushInput()
     ser.flushOutput()
@@ -173,9 +191,11 @@ def Monitor_Serie_con_nl_y_mark(puerto, q_datos,q_cerrar):
             sleep(0.05)
             t = t + ser.read(ser.inWaiting())
             break
+        logger.error('timeout de la conexion')
         print 'timeout comprobar conexion'
     if (len(t)== 0)  or (not t.startswith('COM OK')):
         print 'error en la comunicacion'
+        logger.error('error en la comunicacion, cierro coenxion y thread del monitor')
         q_datos.put('sin conexion')
         q_cerrar.get()
         q_cerrar.close()
@@ -187,6 +207,7 @@ def Monitor_Serie_con_nl_y_mark(puerto, q_datos,q_cerrar):
         print 'COMPROBAR CONEXION'
         return
     print 'Conexion OK'
+    logger.info('Conexion OK')
     ser.timeout = 30
     print 'envio ', ser.write('I'), ' bytes'
     while(q_cerrar.empty()):
@@ -202,6 +223,7 @@ def Monitor_Serie_con_nl_y_mark(puerto, q_datos,q_cerrar):
         else:
             ser.timeout = 1
             print 'timeout'
+            logger.warning('Timeout esperando dato')
     print 'cierro puerto y proceso comunicacion'
     q_cerrar.get()
     q_cerrar.close()
@@ -210,6 +232,7 @@ def Monitor_Serie_con_nl_y_mark(puerto, q_datos,q_cerrar):
     t =0
     ser.close()
     ser.close()
+    logger.info('Cierro conexion y thread del monitor')
     
 def serial_ports():
     """Lista los puertos serie
@@ -227,6 +250,7 @@ def serial_ports():
     elif sys.platform.startswith('darwin'):
         ports = glob.glob('/dev/tty.*')
     else:
+        logger.error('Error en serial_ports() - Unsuported Plataform')
         raise EnvironmentError('Unsupported platform')
     
     result = []
@@ -292,6 +316,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.lnedit_lambda.setValidator(QDoubleValidator(0.0000,99.9999,4))
         puertos = serial_ports()
         print puertos
+        logger.info('Los puertos disponibles son: {}'.format(puertos))
         for puerto in puertos:
             self.combo_puertos.addItem(puerto)
         self.q_datos = mp.Queue()
@@ -303,6 +328,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
     def rbtn_Absoluto_clicked(self):
         """cambia las unidades de las ordenadas al valor absoluto
          y redibuja el plotteo"""
+        logger.info('Cambio coordenadas a valor absoluto')
         self.ydatos = np.array(self.datos)
         self.VentanaPlot.setLabel('left','Valor', units='mV')
         self.curve.setData(self.xdatos, self.ydatos)
@@ -311,6 +337,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
     def rbtn_Relativo_clicked(self):
         """cambia las unidades de las ordenadas, normalizandolas a 100%
         y redibuja el plotteo"""
+        logger.info('Cambio coordenadas a valor relativo')
         self.ydatos = np.array(self.datos_porcentual)
         self.VentanaPlot.setLabel('left','Porcentual', units='%')
         self.curve.setData(self.xdatos, self.ydatos)
@@ -319,6 +346,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
     def rbtn_Espacio_clicked(self):
         """cambia las unidades de la absisa, a espacio interplanar
         y redibuja el plotteo"""
+        logger.info('Cambio absisas a espacio interplanar')
         self.VentanaPlot.setLabel('bottom','Espacio Interplanar', units='Armstrong')
         self.xdatos = np.array(self.datos_x_espacio)
         self.curve.setData(self.xdatos, self.ydatos)
@@ -327,6 +355,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
     def rbtn_Grados_clicked(self):
         """ cambia las unidades de la absisa, a grados
         y redibuja el plotteo"""
+        logger.info('Cambio absisas a grados')
         self.xdatos = np.array(self.datos_x_angulo)
         self.VentanaPlot.setLabel('bottom','Angulo', units='grados')
         self.curve.setData(self.xdatos, self.ydatos)
@@ -341,7 +370,8 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
             return
         self.lbl_estado.setText ('CONECTADO')
         print self.combo_puertos.currentText()
-        self.monitor_serie = mp.Process(target=Monitor_Serie_con_nl_y_mark, args=(str(self.combo_puertos.currentText()), self.q_datos, self.q_cerrar))
+        logger.info('Abro conexion, utilizo puerto: {}'.format(self.combo_puertos.currentText()))
+        self.monitor_serie = mp.Process(target=Monitor_Serie_con_nl_y_mark, name='MonitorPtoSerie', args=(str(self.combo_puertos.currentText()), self.q_datos, self.q_cerrar))
         self.monitor_serie.start()
         #esto dispara el timer que actualiza el plot
         self.timer.start(150)
@@ -357,6 +387,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
     def btn_cerrar_conexion_clicked(self):
         """ Indica al monitor serie que cierre la conexion y 
            rehabilita los botones que deshabilito iniciar sesion"""
+        logger.info('Cierro conexion con adquisidor')
         self.lbl_estado.setText( 'DESCONECTADO')
         self.q_datos
         self.q_cerrar.put('s')
@@ -377,6 +408,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
     def btn_CargarMedicion_clicked(self):
         open_filename = QFileDialog.getOpenFileName(self, 'Abrir Archivo', 'c:\\')#,"Image files (*.jpg *.gif)")
         print open_filename
+        logger.info('Abro archivo: {}'.format(open_filename))
         try:
             with open(open_filename,'r') as archivo:
                 texto = archivo.readlines()
@@ -414,6 +446,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
             self.VentanaPlot.invertX(True)
         except IOError as e:
             print 'no existe el archivo'
+            logger.error('No se pudo abrir archivo: {} - Error {}'.format(open_filename,e))
     
     
     
@@ -422,24 +455,31 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         save_filename = str(QFileDialog.getSaveFileName(self, 'Guardar Archivo', directory=expanduser("~")+'\\desktop\\<'+self.lnedit_Muestra.text()+'-'+self.cmb_CPS.currentText()+'CPS.txt'))
         if not save_filename.lower().endswith('.txt'):
             save_filename = save_filename + '.txt'
-        with open(save_filename,'w') as archivo:
-            # ENCABEZADO
-            archivo.write('MUESTRA:\t'+self.lnedit_Muestra.text()+'\n')
-            archivo.write('LongRx:\t'+self.lnedit_lambda.text()+'\n')
-            archivo.write('CPS:\t'+self.cmb_CPS.currentText()+'\n')
-            archivo.write('Intervalo:\t'+self.cmb_AnguloFinal.currentText()+'-'+self.cmb_AnguloInicial.currentText()+'\n')
-            archivo.write('Fecha:\t'+strftime("%Y-%m-%d %H:%M:%S", gmtime())+'\n'+'\n')
-            archivo.write('2Theta\tINTENSIDAD\td'+'\n')
-            archivo.write('(º)\t(u.a.)\t(Armstrong)'+'\n')
-            #TABLA DE DATOS
-            for i in range(len(self.datos)):
-                archivo.write( "%.2f" % self.datos_x_angulo[i] + '\t' +  "%.2f" % self.datos[i] +'\t' + "%.4f" % self.datos_x_espacio[i] + '\n')
+        try:
+            with open(save_filename,'w') as archivo:
+                # ENCABEZADO
+                archivo.write('MUESTRA:\t'+self.lnedit_Muestra.text()+'\n')
+                archivo.write('LongRx:\t'+self.lnedit_lambda.text()+'\n')
+                archivo.write('CPS:\t'+self.cmb_CPS.currentText()+'\n')
+                archivo.write('Intervalo:\t'+self.cmb_AnguloFinal.currentText()+'-'+self.cmb_AnguloInicial.currentText()+'\n')
+                archivo.write('Fecha:\t'+strftime("%Y-%m-%d %H:%M:%S", gmtime())+'\n'+'\n')
+                archivo.write('2Theta\tINTENSIDAD\td'+'\n')
+                archivo.write('(º)\t(u.a.)\t(Armstrong)'+'\n')
+                #TABLA DE DATOS
+                for i in range(len(self.datos)):
+                    archivo.write( "%.2f" % self.datos_x_angulo[i] + '\t' +  "%.2f" % self.datos[i] +'\t' + "%.4f" % self.datos_x_espacio[i] + '\n')
+                logger.info('Se guardo el archivo: {}'.format(save_filename + '.txt'))
+        except:
+            logger.error('Problemas al guardar archivo: {}'.format(save_filename + '.txt'))
         
     def btn_salir_clicked(self):
         self.btn_cerrar_conexion_clicked()
+        logger.info('Cierro Programa RX')
+        logger.info('*********************************')
         exit()
         
     def btn_LimpiarPlot_clicked(self):
+        logger.info('Limpie plot')
         self.curve.clear()
         self.datos = []
         self.cmb_AnguloInicial.setEnabled(True)
@@ -533,6 +573,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         #    print self.ydatos        
 
     def msj_error_conexion(self):
+        logger.error('El adquisidor no responde, comprobar conexion y puerto')
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
         msg.setText("Error de conexion")
@@ -545,6 +586,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
      #  print "value of pressed message box button:", retval
     
     def msj_error_nombre_muestra(self):
+        logger.warning('Falta completar campo MUESTRA para iniciar adquisicion')
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setText("Datos incompletos")
