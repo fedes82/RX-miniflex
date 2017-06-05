@@ -39,3 +39,31 @@ Serial<id=0x1904cb0, open=True>(port='COM1', baudrate=9600, bytesize=8, parity='
 2017-06-01 15:52:36,467 - MainProcess - INFO - Cierro conexion con adquisidor
 2017-06-01 15:52:36,467 - MainProcess - INFO - Cierro Programa RX
 2017-06-01 15:52:36,467 - MainProcess - INFO - *********************************
+2017-06-05 14:01:22,039 - MainProcess - INFO - ---------------------------------------------------
+2017-06-05 14:01:22,039 - MainProcess - INFO - Inicio Programa RX
+2017-06-05 14:01:22,461 - MainProcess - INFO - Los puertos disponibles son: ['COM1', 'COM3']
+2017-06-05 14:02:19,688 - MainProcess - INFO - Abro conexion, utilizo puerto: COM1
+2017-06-05 14:02:20,578 - MonitorPtoSerie - INFO - ---------------------------------------------------
+2017-06-05 14:02:20,578 - MonitorPtoSerie - INFO - Inicio Programa RX
+2017-06-05 14:02:20,717 - MonitorPtoSerie - INFO - Inicio monitor del puerto serie
+2017-06-05 14:02:20,717 - MonitorPtoSerie - INFO - Pto Serie: 
+Serial<id=0x18f4cd0, open=True>(port='COM1', baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=1.5, xonxoff=False, rtscts=False, dsrdtr=False)
+2017-06-05 14:02:20,780 - MonitorPtoSerie - INFO - Conexion OK
+2017-06-05 14:22:38,990 - MonitorPtoSerie - WARNING - Timeout esperando dato
+2017-06-05 14:29:25,073 - MainProcess - INFO - Cierro conexion con adquisidor
+2017-06-05 14:29:25,246 - MonitorPtoSerie - INFO - Cierro conexion y thread del monitor
+2017-06-05 14:29:36,711 - MainProcess - INFO - Se guardo el archivo: C:/Users/RX/Desktop/Gustavo/Sole_5(a) ZnCCAfen_pH4-5 60a8-2000CPS.txt.txt
+2017-06-05 14:40:00,977 - MainProcess - INFO - ---------------------------------------------------
+2017-06-05 14:40:00,977 - MainProcess - INFO - Inicio Programa RX
+2017-06-05 14:40:01,276 - MainProcess - INFO - Los puertos disponibles son: ['COM1', 'COM3']
+2017-06-05 14:40:04,173 - MainProcess - INFO - Cierro conexion con adquisidor
+2017-06-05 14:42:15,888 - MainProcess - INFO - Cierro conexion con adquisidor
+2017-06-05 14:42:16,559 - MainProcess - INFO - Cierro conexion con adquisidor
+2017-06-05 14:42:16,714 - MainProcess - INFO - Cierro conexion con adquisidor
+2017-06-05 14:43:33,078 - MainProcess - INFO - ---------------------------------------------------
+2017-06-05 14:43:33,078 - MainProcess - INFO - Inicio Programa RX
+2017-06-05 14:43:33,368 - MainProcess - INFO - Los puertos disponibles son: ['COM1', 'COM3']
+2017-06-05 14:43:34,723 - MainProcess - INFO - Cierro conexion con adquisidor
+2017-06-05 14:43:34,723 - MainProcess - WARNING - Quise cerrar el thread monitor_serie, pero no existia
+2017-06-05 14:43:34,723 - MainProcess - INFO - Cierro Programa RX
+2017-06-05 14:43:34,723 - MainProcess - INFO - *********************************

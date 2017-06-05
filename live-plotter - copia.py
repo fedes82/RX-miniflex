@@ -421,10 +421,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.lbl_estado.setText( 'DESCONECTADO')
         self.q_datos
         self.q_cerrar.put('s')
-        try:
-            self.monitor_serie.join()
-        except:
-            logger.warning('Quise cerrar el thread monitor_serie, pero no existia')
+        self.monitor_serie.join()
         self.q_datos.close()
         self.q_cerrar.close()
         #Aca detengo el timer que actualiza el plot
