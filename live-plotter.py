@@ -27,13 +27,27 @@ logger.setLevel(logging.INFO)
 
 # create a file handler
 handler = logging.FileHandler('bitacora.log')
+handler_traceback = logging.StreamHandler(stream=sys.stdout)
 handler.setLevel(logging.INFO)
 
 # create a logging format
 formatter = logging.Formatter('%(asctime)s - %(processName)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 
+###para sacar el traceback por el logger
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    logger.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+sys.excepthook = handle_exception
+
+
+
 # add the handlers to the logger
+logger.addHandler(handler_traceback)
 logger.addHandler(handler)
 # Cargar nuestro archivo .ui
 form_class = uic.loadUiType("ui.ui")[0]
@@ -41,6 +55,7 @@ logger.info('---------------------------------------------------')
 logger.info('Inicio Programa RX')
 #eto es para usar 2 decimales
 #getcontext.prec=2
+
 
 # def Comprobar_Conexion(puerto, q_datos,q_cerrar):
     # """ Esta funcion abre el puerto serie, envia una P (comando
@@ -413,18 +428,36 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.btn_cerrar_conexion.setEnabled(True)
         self.btn_XReset_clicked()
         self.btn_YReset_clicked()
+        ##*------creo archivo temporal
+        with open('TEMPORAL-MEDICION.txt','w') as archivotemp:
+            # ENCABEZADO
+            archivotemp.write('MUESTRA:\t'+self.lnedit_Muestra.text()+'\n')
+            archivotemp.write('LongRx:\t'+self.lnedit_lambda.text()+'\n')
+            archivotemp.write('CPS:\t'+self.cmb_CPS.currentText()+'\n')
+            archivotemp.write('Intervalo:\t'+self.cmb_AnguloFinal.currentText()+'-'+self.cmb_AnguloInicial.currentText()+'\n')
+            archivotemp.write('Fecha:\t'+strftime("%Y-%m-%d %H:%M:%S", gmtime())+'\n'+'\n')
+            archivotemp.write('2Theta\tINTENSIDAD\td'+'\n')
+            archivotemp.write('(º)\t(u.a.)\t(Angstrom)'+'\n')
+        
+        
+        
+        
+        
         
     def btn_cerrar_conexion_clicked(self):
         """ Indica al monitor serie que cierre la conexion y 
            rehabilita los botones que deshabilito iniciar sesion"""
         logger.info('Cierro conexion con adquisidor')
         self.lbl_estado.setText( 'DESCONECTADO')
-        self.q_datos
-        self.q_cerrar.put('s')
+        #self.q_datos
+        try:
+            self.q_cerrar.put('s')
+        except:
+            pass
         try:
             self.monitor_serie.join()
         except:
-            logger.warning('Quise cerrar el thread monitor_serie, pero no existia')
+            pass
         self.q_datos.close()
         self.q_cerrar.close()
         #Aca detengo el timer que actualiza el plot
@@ -496,7 +529,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
                 archivo.write('Intervalo:\t'+self.cmb_AnguloFinal.currentText()+'-'+self.cmb_AnguloInicial.currentText()+'\n')
                 archivo.write('Fecha:\t'+strftime("%Y-%m-%d %H:%M:%S", gmtime())+'\n'+'\n')
                 archivo.write('2Theta\tINTENSIDAD\td'+'\n')
-                archivo.write('(º)\t(u.a.)\t(Armstrong)'+'\n')
+                archivo.write('(º)\t(u.a.)\t(Angstrom)'+'\n')
                 #TABLA DE DATOS
                 for i in range(len(self.datos)):
                     archivo.write( "%.2f" % self.datos_x_angulo[i] + '\t' +  "%.2f" % self.datos[i] +'\t' + "%.4f" % self.datos_x_espacio[i] + '\n')
@@ -542,6 +575,8 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
                     return
                 else:
                     self.datos.append(temp)
+                    with open('TEMPORAL-MEDICION.txt','a') as archivotemp:
+                        archivotemp.write( "{:.2f} \n".format(temp))
             if max(self.datos):
                 self.datos_porcentual = [valor*100/max(self.datos)  for valor in self.datos]
             else:
