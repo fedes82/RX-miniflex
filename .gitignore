@@ -12,3 +12,7 @@ crosshair.py
 ui2.ui
 333.py
 live-plotter.pyc
+*.tmp
+TEMPORAL-MEDICION.txt
+*.log
+bitacora.log
